@@ -216,4 +216,96 @@ export const useAppStore = create((set, get) => ({
       set({ alertsLoading: false });
     }
   },
+  
+  // ==================== Event Builder API ====================
+  
+  // Events (deduplicated, correlated signals)
+  events: [],
+  eventsLoading: false,
+  eventConfig: null,
+  
+  // Fetch events instead of raw signals
+  fetchEvents: async (days = 7) => {
+    set({ eventsLoading: true });
+    try {
+      const res = await fetch(`${API_BASE}/api/geo/events?days=${days}&limit=100`);
+      const data = await res.json();
+      if (data.ok) {
+        set({ events: data.items || [] });
+      }
+    } catch (err) {
+      console.error('Failed to fetch events:', err);
+    } finally {
+      set({ eventsLoading: false });
+    }
+  },
+  
+  // Confirm event (user sees it)
+  confirmEvent: async (eventId) => {
+    const { telegramUser, fetchEvents } = get();
+    const userId = telegramUser?.id || 'anonymous';
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/geo/events/${eventId}/confirm?userId=${userId}`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (data.ok) {
+        // Refresh events
+        fetchEvents();
+        return { success: true, data };
+      }
+      return { success: false, error: data.error };
+    } catch (err) {
+      console.error('Failed to confirm event:', err);
+      return { success: false, error: err.message };
+    }
+  },
+  
+  // Report event not there
+  reportNotThere: async (eventId) => {
+    const { telegramUser, fetchEvents } = get();
+    const userId = telegramUser?.id || 'anonymous';
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/geo/events/${eventId}/not-there?userId=${userId}`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (data.ok) {
+        // Refresh events
+        fetchEvents();
+        return { success: true, data };
+      }
+      return { success: false, error: data.error };
+    } catch (err) {
+      console.error('Failed to report not-there:', err);
+      return { success: false, error: err.message };
+    }
+  },
+  
+  // Get event details with reports
+  getEventDetails: async (eventId) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/geo/events/${eventId}`);
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error('Failed to get event details:', err);
+      return { ok: false, error: err.message };
+    }
+  },
+  
+  // Fetch event builder config
+  fetchEventConfig: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/geo/events/config/info`);
+      const data = await res.json();
+      if (data.ok) {
+        set({ eventConfig: data.config });
+      }
+    } catch (err) {
+      console.error('Failed to fetch event config:', err);
+    }
+  },
 }));

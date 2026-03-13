@@ -86,8 +86,10 @@ class GeoModule:
         try:
             from .services.geo_session_service import ensure_session_indexes
             from .services.event_matcher import ensure_matcher_indexes
+            from .services.event_builder import ensure_event_builder_indexes
             await ensure_session_indexes(self.db)
             await ensure_matcher_indexes(self.db)
+            await ensure_event_builder_indexes(self.db)
             logger.info("Geo Session indexes created")
         except Exception as e:
             logger.warning(f"Geo session indexes failed (non-critical): {e}")

@@ -24,6 +24,11 @@ from .services.subscriptions import (
 from .services.notifier import send_test_alert, format_proximity_alert
 from .services.bot import start_bot, get_bot
 from .services.scheduler import start_scheduler, get_scheduler
+from .services.event_builder import (
+    EventBuilder, ConfidenceCalculator, NegativeFilter,
+    EventStatus, EventStrength, SIGNAL_PRIORITY, DEFAULT_TTL, NEGATIVE_KEYWORDS,
+    DEDUP_DISTANCE_M, DEDUP_TIME_WINDOW_MIN, CONFIDENCE_THRESHOLD
+)
 from .__version__ import VERSION
 
 logger = logging.getLogger(__name__)
@@ -1473,5 +1478,302 @@ def build_geo_router(db, config) -> APIRouter:
             "preview": formatted,
             "html_preview": formatted.replace("\n", "<br>")
         }
+    
+    # ==================== Event Builder API ====================
+    
+    @router.get("/events/config/info")
+    async def get_event_config():
+        """
+        Get Event Builder configuration.
+        
+        For admin panel: AI Engine settings tab.
+        """
+        return {
+            "ok": True,
+            "config": {
+                "dedup_distance_m": DEDUP_DISTANCE_M,
+                "dedup_time_window_min": DEDUP_TIME_WINDOW_MIN,
+                "confidence_threshold": CONFIDENCE_THRESHOLD,
+                "signal_priorities": SIGNAL_PRIORITY,
+                "default_ttl": DEFAULT_TTL,
+                "negative_keywords": NEGATIVE_KEYWORDS,
+                "statuses": {
+                    "candidate": "1 signal",
+                    "correlated": "2 signals",
+                    "verified": "2+ sources and confidence > 0.75",
+                    "expired": "TTL ended",
+                    "dismissed": "Rejected by moderation"
+                },
+                "strengths": {
+                    "weak": "1 source",
+                    "medium": "2 signals / 1-2 sources",
+                    "strong": "3+ sources",
+                    "critical": "detention/raid + user confirmation + photo"
+                }
+            }
+        }
+    
+    @router.get("/events/stats")
+    async def get_event_stats_endpoint(days: int = Query(7, ge=1, le=90)):
+        """Get event statistics."""
+        now = datetime.now(timezone.utc)
+        since = now - timedelta(days=days)
+        
+        # Count by status
+        pipeline = [
+            {"$match": {"created_at": {"$gte": since}}},
+            {"$group": {"_id": "$status", "count": {"$sum": 1}}}
+        ]
+        
+        status_counts = {}
+        async for doc in db.geo_events.aggregate(pipeline):
+            status_counts[doc["_id"]] = doc["count"]
+        
+        # Count by type
+        pipeline = [
+            {"$match": {"created_at": {"$gte": since}, "status": {"$nin": ["expired", "dismissed"]}}},
+            {"$group": {"_id": "$type", "count": {"$sum": 1}}}
+        ]
+        
+        type_counts = {}
+        async for doc in db.geo_events.aggregate(pipeline):
+            type_counts[doc["_id"]] = doc["count"]
+        
+        # Count total reports
+        total_reports = await db.geo_signal_reports.count_documents(
+            {"created_at": {"$gte": since}}
+        )
+        
+        # Average confidence
+        pipeline = [
+            {"$match": {"created_at": {"$gte": since}, "status": "verified"}},
+            {"$group": {"_id": None, "avg_confidence": {"$avg": "$confidence"}}}
+        ]
+        
+        avg_confidence = 0
+        async for doc in db.geo_events.aggregate(pipeline):
+            avg_confidence = doc.get("avg_confidence", 0)
+        
+        return {
+            "ok": True,
+            "days": days,
+            "stats": {
+                "by_status": status_counts,
+                "by_type": type_counts,
+                "total_reports": total_reports,
+                "avg_verified_confidence": round(avg_confidence, 2) if avg_confidence else 0
+            }
+        }
+    
+    @router.get("/events")
+    async def get_events(
+        days: int = Query(7, ge=1, le=90),
+        type: Optional[str] = Query(None, description="Event type filter"),
+        limit: int = Query(100, ge=1, le=500),
+        status: Optional[str] = Query(None, description="Filter by status")
+    ):
+        """
+        Get verified/correlated events (not raw signals).
+        
+        Events are deduplicated and merged from multiple signals.
+        Shows on map as single points instead of signal spam.
+        """
+        event_builder = EventBuilder(db)
+        events = await event_builder.get_map_events(
+            days=days,
+            limit=limit,
+            event_type=type
+        )
+        
+        # Filter by status if provided
+        if status:
+            events = [e for e in events if e.get("status") == status]
+        
+        return {
+            "ok": True,
+            "items": events,
+            "count": len(events),
+            "filters": {
+                "days": days,
+                "type": type,
+                "status": status
+            }
+        }
+    
+    @router.get("/events/{event_id}")
+    async def get_event_detail(event_id: str):
+        """Get single event with all reports."""
+        event = await db.geo_events.find_one({"event_id": event_id}, {"_id": 0})
+        
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found")
+        
+        event_builder = EventBuilder(db)
+        reports = await event_builder.get_event_reports(event_id)
+        
+        return {
+            "ok": True,
+            "event": event,
+            "reports": reports,
+            "report_count": len(reports)
+        }
+    
+    @router.post("/events/{event_id}/confirm")
+    async def confirm_event(event_id: str, userId: str = Query(...)):
+        """
+        User confirms they see the event.
+        Increases confidence and extends TTL.
+        """
+        event_builder = EventBuilder(db)
+        result = await event_builder.confirm_event(event_id, userId)
+        
+        return result
+    
+    @router.post("/events/{event_id}/not-there")
+    async def report_event_not_there(event_id: str, userId: str = Query(...)):
+        """
+        User reports event is no longer there.
+        Decreases confidence, may expire event.
+        """
+        event_builder = EventBuilder(db)
+        result = await event_builder.report_not_there(event_id, userId)
+        
+        return result
+    
+    @router.post("/events/process-signal")
+    async def process_signal(
+        signal_type: str = Query(..., description="Signal type (police, danger, etc.)"),
+        lat: float = Query(...),
+        lng: float = Query(...),
+        source: str = Query("miniapp", description="Signal source"),
+        source_channel: Optional[str] = Query(None),
+        text: Optional[str] = Query(None),
+        ai_confidence: float = Query(0.5, ge=0, le=1),
+        has_photo: bool = Query(False),
+        user_id: Optional[str] = Query(None),
+        message_id: Optional[str] = Query(None),
+    ):
+        """
+        Process incoming signal through Event Builder.
+        
+        Pipeline:
+        1. Check for negative message (чисто, вільно, etc.)
+        2. Find matching existing event (dedup)
+        3. Merge or create new event
+        4. Recalculate confidence
+        
+        Returns:
+            - action: "created" | "merged" | "expired"
+            - event_id
+            - event details
+        """
+        event_builder = EventBuilder(db)
+        
+        result = await event_builder.process_signal(
+            signal_type=signal_type,
+            lat=lat,
+            lng=lng,
+            source=source,
+            source_channel=source_channel,
+            text=text,
+            ai_confidence=ai_confidence,
+            has_photo=has_photo,
+            user_id=user_id,
+            message_id=message_id,
+        )
+        
+        return {"ok": True, **result}
+    
+    @router.post("/events/expire-old")
+    async def expire_old_events():
+        """Manually expire old events (cron job helper)."""
+        now = datetime.now(timezone.utc)
+        
+        result = await db.geo_events.update_many(
+            {
+                "status": {"$nin": [EventStatus.EXPIRED, EventStatus.DISMISSED]},
+                "expires_at": {"$lt": now}
+            },
+            {
+                "$set": {
+                    "status": EventStatus.EXPIRED,
+                    "expired_reason": "ttl_expired",
+                    "updated_at": now
+                }
+            }
+        )
+        
+        return {
+            "ok": True,
+            "expired_count": result.modified_count
+        }
+    
+    @router.get("/signal-reports")
+    async def get_signal_reports(
+        event_id: Optional[str] = Query(None),
+        source_channel: Optional[str] = Query(None),
+        limit: int = Query(50, ge=1, le=200)
+    ):
+        """
+        Get signal reports (for debugging/training).
+        
+        Signal reports table allows:
+        - View sources
+        - Check false signals
+        - Train the system
+        """
+        query = {}
+        if event_id:
+            query["event_id"] = event_id
+        if source_channel:
+            query["source_channel"] = source_channel
+        
+        reports = await db.geo_signal_reports.find(
+            query,
+            {"_id": 0}
+        ).sort("created_at", -1).limit(limit).to_list(limit)
+        
+        return {
+            "ok": True,
+            "reports": reports,
+            "count": len(reports)
+        }
+    
+    @router.post("/test/negative-filter")
+    async def test_negative_filter(text: str = Query(...)):
+        """Test negative filter on text."""
+        is_negative = NegativeFilter.is_negative(text)
+        penalty = NegativeFilter.get_confidence_penalty(text)
+        
+        return {
+            "ok": True,
+            "text": text,
+            "is_negative": is_negative,
+            "confidence_penalty": penalty,
+            "matched_keywords": [kw for kw in NEGATIVE_KEYWORDS if kw in text.lower()]
+        }
+    
+    @router.post("/test/confidence-calc")
+    async def test_confidence_calc(
+        ai_confidence: float = Query(0.5),
+        report_count: int = Query(1),
+        unique_sources: int = Query(1),
+        age_minutes: float = Query(0),
+        user_confirmations: int = Query(0),
+        has_photo: bool = Query(False),
+        signal_type: str = Query("police"),
+    ):
+        """Test confidence calculation."""
+        result = ConfidenceCalculator.calculate(
+            ai_confidence=ai_confidence,
+            report_count=report_count,
+            unique_sources=unique_sources,
+            age_minutes=age_minutes,
+            user_confirmations=user_confirmations,
+            has_photo=has_photo,
+            signal_type=signal_type,
+        )
+        
+        return {"ok": True, **result}
     
     return router
