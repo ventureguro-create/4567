@@ -1,0 +1,909 @@
+/* ============================================
+   CONNECTIONS MODULE - MOBILE RESPONSIVE v3.0
+   iPhone 12 Pro (390x844) as base reference
+   ============================================ */
+
+/* ============================================
+   1. CSS VARIABLES FOR MOBILE
+   ============================================ */
+:root {
+  --mobile-padding: 16px;
+  --mobile-gap: 12px;
+  --mobile-radius: 12px;
+  --mobile-touch-min: 44px;
+  --header-height-mobile: 56px;
+}
+
+/* ============================================
+   2. GLOBAL MOBILE LAYOUT FIXES
+   ============================================ */
+
+/* Prevent horizontal overflow on entire page */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+  
+  #root {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+}
+
+/* ============================================
+   3. TOP BAR - MOBILE OPTIMIZATION
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* TopBar container */
+  .bg-white.border-b.px-6.py-3 {
+    padding: 12px var(--mobile-padding) !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 40 !important;
+    background: white !important;
+  }
+  
+  /* Hide search bar on mobile - show icon instead */
+  .bg-white.border-b .flex-1.max-w-2xl {
+    display: none !important;
+  }
+  
+  /* Right section icons - make them visible */
+  .bg-white.border-b .flex.items-center.gap-3.ml-6 {
+    margin-left: 0 !important;
+    flex: 1 !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+  }
+  
+  /* Connect button - hide text */
+  .bg-white.border-b button .hidden.sm\\:inline {
+    display: none !important;
+  }
+  
+  /* Smaller connect button */
+  .bg-white.border-b .flex.items-center.gap-2.px-5.py-2\\.5 {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* ============================================
+   4. SIDEBAR - MOBILE DRAWER
+   ============================================ */
+
+@media (max-width: 1023px) {
+  /* Mobile menu button - always visible */
+  button[data-testid="mobile-menu-btn"] {
+    display: flex !important;
+    position: fixed !important;
+    top: 12px !important;
+    left: var(--mobile-padding) !important;
+    z-index: 60 !important;
+    padding: 10px !important;
+    background: #111827 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  }
+  
+  /* Sidebar overlay */
+  .lg\\:hidden.fixed.inset-0.bg-black\\/50 {
+    z-index: 55 !important;
+    backdrop-filter: blur(4px) !important;
+  }
+  
+  /* Sidebar drawer */
+  aside.fixed.lg\\:relative {
+    width: 280px !important;
+    max-width: 85vw !important;
+    z-index: 60 !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.2) !important;
+  }
+}
+
+/* ============================================
+   5. PAGE CONTAINERS - MOBILE PADDING
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Main content area - add left padding for menu button */
+  .min-h-screen.bg-gray-50 {
+    padding-top: 8px !important;
+  }
+  
+  /* Page containers */
+  .max-w-7xl.mx-auto.px-4 {
+    padding-left: var(--mobile-padding) !important;
+    padding-right: var(--mobile-padding) !important;
+    padding-top: 60px !important; /* Space for fixed menu button */
+  }
+  
+  .max-w-7xl.mx-auto.px-6 {
+    padding-left: var(--mobile-padding) !important;
+    padding-right: var(--mobile-padding) !important;
+  }
+  
+  /* Page content with sidebar offset */
+  main.flex-1 {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+}
+
+/* ============================================
+   6. NAVIGATION TABS - HORIZONTAL SCROLL
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Tab containers - force horizontal scroll */
+  .flex.items-center.gap-2.mb-4.overflow-x-auto,
+  .flex.items-center.gap-2.mb-4,
+  nav[role="tablist"],
+  [role="tablist"] {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding-bottom: 8px !important;
+    margin-left: calc(-1 * var(--mobile-padding)) !important;
+    margin-right: calc(-1 * var(--mobile-padding)) !important;
+    padding-left: var(--mobile-padding) !important;
+    padding-right: var(--mobile-padding) !important;
+    gap: 8px !important;
+  }
+  
+  .flex.items-center.gap-2.mb-4::-webkit-scrollbar,
+  nav[role="tablist"]::-webkit-scrollbar {
+    display: none !important;
+  }
+  
+  /* Tab items - prevent shrink */
+  .flex.items-center.gap-2.mb-4 > *,
+  [role="tablist"] > * {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+  
+  /* Tab buttons */
+  .px-4.py-2.rounded-lg.text-sm.font-medium {
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* ============================================
+   7. STATS BANNER - COMPACT
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Stats banner */
+  .mb-4.p-3.bg-green-50 {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    padding: 12px !important;
+    font-size: 12px !important;
+  }
+  
+  .mb-4.p-3.bg-green-50 .ml-auto {
+    margin-left: 0 !important;
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+}
+
+/* ============================================
+   8. PAGE HEADER - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Header container */
+  .mb-6 .flex.items-center.gap-3 {
+    gap: 12px !important;
+  }
+  
+  /* Icon box */
+  .w-10.h-10.rounded-lg {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+  }
+  
+  /* Title */
+  .mb-6 h1.text-2xl {
+    font-size: 1.25rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  /* Description */
+  .mb-6 p.text-sm.text-gray-500 {
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+  }
+}
+
+/* ============================================
+   9. FILTERS BAR - MOBILE LAYOUT
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Filter container */
+  .bg-white.rounded-xl.border.border-gray-200.shadow-sm.p-4.mb-6 {
+    padding: 12px !important;
+    border-radius: 12px !important;
+  }
+  
+  /* Top row - stack vertically */
+  .bg-white.rounded-xl .flex.items-center.gap-4.mb-4 {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  
+  /* Search field - full width */
+  .relative.flex-1.max-w-md {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  
+  /* Search input */
+  .relative.flex-1.max-w-md input {
+    width: 100% !important;
+    font-size: 16px !important; /* Prevent iOS zoom */
+    padding: 12px 80px 12px 14px !important;
+    border-radius: 10px !important;
+  }
+  
+  /* Sort + Compare + View row */
+  .flex.items-center.gap-2:has([data-testid="influencer-sort"]),
+  .flex.items-center.gap-2:has([data-testid="compare-mode-btn"]) {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  
+  /* Sort label */
+  .flex.items-center.gap-2 > span.text-sm.text-gray-500 {
+    display: none !important;
+  }
+  
+  /* Sort dropdown */
+  .w-44.h-9 {
+    width: 130px !important;
+    height: 40px !important;
+  }
+  
+  /* Compare button */
+  [data-testid="compare-mode-btn"] {
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+  }
+  
+  /* View toggle */
+  .flex.gap-1.bg-gray-100.rounded-lg.p-1 {
+    padding: 4px !important;
+  }
+  
+  .flex.gap-1.bg-gray-100 button {
+    padding: 8px !important;
+    min-width: var(--mobile-touch-min) !important;
+    min-height: var(--mobile-touch-min) !important;
+  }
+  
+  /* Group filters - horizontal scroll */
+  .flex.items-center.gap-2.flex-wrap {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding-bottom: 4px !important;
+    margin-left: -12px !important;
+    margin-right: -12px !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  
+  .flex.items-center.gap-2.flex-wrap::-webkit-scrollbar {
+    display: none !important;
+  }
+  
+  /* Group label */
+  .flex.items-center.gap-2.flex-wrap > span.text-sm.text-gray-500.mr-2 {
+    flex-shrink: 0 !important;
+  }
+  
+  /* Filter chips */
+  .px-4.py-2.rounded-full.text-sm.font-medium.transition.border {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* ============================================
+   10. INFLUENCER CARDS - MOBILE GRID
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Grid - single column */
+  .grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3,
+  [data-testid="influencer-grid"] {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  /* Card */
+  [data-testid="influencer-grid"] > div > div,
+  .bg-white.rounded-xl.border.border-gray-200.p-4 {
+    padding: 14px !important;
+    border-radius: 12px !important;
+  }
+  
+  /* Card header */
+  [data-testid="influencer-grid"] .flex.items-start.gap-3 {
+    gap: 10px !important;
+  }
+  
+  /* Avatar */
+  [data-testid="influencer-grid"] img.w-12.h-12,
+  [data-testid="influencer-grid"] img.w-14.h-14 {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 10px !important;
+  }
+  
+  /* Name */
+  [data-testid="influencer-grid"] .text-lg.font-semibold {
+    font-size: 15px !important;
+  }
+  
+  /* Handle */
+  [data-testid="influencer-grid"] .text-gray-500.text-sm {
+    font-size: 12px !important;
+  }
+  
+  /* Score badges */
+  [data-testid="influencer-grid"] .flex.items-center.gap-2.text-xs,
+  [data-testid="influencer-grid"] .flex.gap-2 {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  
+  /* Stats grid in card */
+  [data-testid="influencer-grid"] .grid.grid-cols-3 {
+    gap: 8px !important;
+  }
+  
+  /* Stat values */
+  [data-testid="influencer-grid"] .text-sm.font-semibold {
+    font-size: 13px !important;
+  }
+  
+  /* Stat labels */
+  [data-testid="influencer-grid"] .text-xs.text-gray-500 {
+    font-size: 10px !important;
+  }
+}
+
+/* ============================================
+   11. LIST VIEW - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+  [data-testid="influencer-list"] {
+    gap: 10px !important;
+  }
+  
+  [data-testid="influencer-list"] > div > div {
+    padding: 12px !important;
+  }
+}
+
+/* ============================================
+   12. PAGINATION - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .flex.items-center.justify-center.gap-2.mt-6 {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    padding: 0 var(--mobile-padding) !important;
+  }
+  
+  /* Page buttons */
+  .flex.items-center.gap-1 {
+    order: 2 !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  /* Prev/Next buttons */
+  .px-3.py-1\\.5.rounded-lg.text-sm.font-medium {
+    padding: 10px 14px !important;
+    min-width: 90px !important;
+  }
+  
+  /* Page info text */
+  .text-sm.text-gray-500.ml-2 {
+    width: 100% !important;
+    text-align: center !important;
+    margin-left: 0 !important;
+    margin-top: 8px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* ============================================
+   13. EMPTY STATE - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+  [data-testid="empty-state"] {
+    padding: 32px 16px !important;
+  }
+  
+  [data-testid="empty-state"] .w-12.h-12 {
+    width: 48px !important;
+    height: 48px !important;
+  }
+  
+  [data-testid="empty-state"] h3 {
+    font-size: 16px !important;
+  }
+  
+  [data-testid="empty-state"] p {
+    font-size: 13px !important;
+  }
+}
+
+/* ============================================
+   14. CLUSTERS PAGE - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Header with buttons */
+  .flex.items-start.justify-between.mb-6 {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+  
+  /* Action buttons row */
+  .flex.gap-2.items-center {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  
+  /* Cluster cards - single column */
+  .space-y-4 > div {
+    padding: 14px !important;
+  }
+  
+  /* Cluster header */
+  .flex.items-center.justify-between.mb-3 {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  
+  /* Member tags - horizontal scroll */
+  .flex.flex-wrap.gap-2 {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 4px !important;
+    margin: 0 -14px !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  
+  .flex.flex-wrap.gap-2::-webkit-scrollbar {
+    display: none !important;
+  }
+  
+  .flex.flex-wrap.gap-2 > * {
+    flex-shrink: 0 !important;
+  }
+}
+
+/* ============================================
+   15. LIFECYCLE PAGE - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Info panel */
+  .bg-white.rounded-xl.border.p-6 {
+    padding: 14px !important;
+  }
+  
+  /* Collapsible sections */
+  .space-y-3 > div {
+    padding: 12px !important;
+  }
+  
+  /* Phase legend */
+  .flex.items-center.gap-4.text-xs {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  
+  .flex.items-center.gap-4.text-xs > div {
+    flex-shrink: 0 !important;
+  }
+}
+
+/* ============================================
+   16. GRAPH PAGE - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Graph container */
+  .min-h-\\[500px\\],
+  .h-\\[500px\\],
+  [data-testid*="graph"] {
+    min-height: 300px !important;
+    height: 50vh !important;
+  }
+  
+  /* Graph controls */
+  .absolute.top-4.left-4,
+  .absolute.top-4.right-4 {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    margin-bottom: 8px !important;
+  }
+  
+  /* Back link */
+  a.flex.items-center.gap-1 {
+    padding: 8px 0 !important;
+    font-size: 13px !important;
+  }
+}
+
+/* ============================================
+   17. ALT SEASON PAGE - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Stats row */
+  .grid.grid-cols-2.lg\\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  
+  /* Stat card */
+  .bg-white.rounded-xl.p-4.border {
+    padding: 12px !important;
+  }
+  
+  /* Token list */
+  .divide-y > div {
+    padding: 10px 12px !important;
+  }
+}
+
+/* ============================================
+   18. RADAR PAGE - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Two column layout - stack */
+  .grid.lg\\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Radar account list */
+  .max-h-\\[600px\\] {
+    max-height: 400px !important;
+  }
+  
+  /* Account item */
+  .flex.items-center.gap-3.p-3 {
+    padding: 10px 12px !important;
+    gap: 10px !important;
+  }
+}
+
+/* ============================================
+   19. MODALS & DRAWERS - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Modal container */
+  [role="dialog"],
+  .fixed.inset-0.z-50 {
+    padding: var(--mobile-padding) !important;
+  }
+  
+  /* Modal content */
+  .bg-white.rounded-xl.max-w-lg,
+  .bg-white.rounded-2xl.max-w-2xl {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    border-radius: 16px !important;
+  }
+  
+  /* Bottom sheet style modal */
+  .fixed.bottom-0 {
+    border-radius: 16px 16px 0 0 !important;
+    max-height: 85vh !important;
+  }
+}
+
+/* ============================================
+   20. BUTTONS - TOUCH TARGETS
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* All interactive elements */
+  button,
+  a,
+  [role="button"],
+  input[type="submit"],
+  .clickable {
+    min-height: var(--mobile-touch-min) !important;
+  }
+  
+  /* Icon buttons */
+  button:has(> svg:only-child),
+  .icon-btn {
+    min-width: var(--mobile-touch-min) !important;
+    min-height: var(--mobile-touch-min) !important;
+    padding: 10px !important;
+  }
+  
+  /* Inline text buttons are exempt */
+  a.text-sm,
+  button.text-xs,
+  span.cursor-pointer {
+    min-height: auto !important;
+  }
+}
+
+/* ============================================
+   21. TYPOGRAPHY - MOBILE SCALE
+   ============================================ */
+
+@media (max-width: 768px) {
+  h1, .text-3xl, .text-4xl {
+    font-size: 1.375rem !important;
+    line-height: 1.25 !important;
+  }
+  
+  h2, .text-2xl {
+    font-size: 1.125rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  h3, .text-xl {
+    font-size: 1rem !important;
+  }
+  
+  .text-lg {
+    font-size: 0.9375rem !important;
+  }
+}
+
+/* ============================================
+   22. BADGES & TAGS - MOBILE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .badge,
+  .pill,
+  .tag,
+  [class*="badge"],
+  .px-2.py-0\\.5.rounded-full,
+  .px-2.py-1.rounded-full {
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+  }
+}
+
+/* ============================================
+   23. TABLES - HORIZONTAL SCROLL
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Table wrapper */
+  .overflow-x-auto,
+  .table-wrapper {
+    margin-left: calc(-1 * var(--mobile-padding)) !important;
+    margin-right: calc(-1 * var(--mobile-padding)) !important;
+    padding-left: var(--mobile-padding) !important;
+    padding-right: var(--mobile-padding) !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Table */
+  table {
+    min-width: 600px !important;
+  }
+  
+  th, td {
+    padding: 10px 12px !important;
+    font-size: 12px !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* ============================================
+   24. SAFE AREAS - IPHONE NOTCH
+   ============================================ */
+
+@supports (padding: max(0px)) {
+  @media (max-width: 768px) {
+    .min-h-screen.bg-gray-50 {
+      padding-left: max(var(--mobile-padding), env(safe-area-inset-left)) !important;
+      padding-right: max(var(--mobile-padding), env(safe-area-inset-right)) !important;
+      padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+    }
+    
+    /* Fixed elements */
+    button[data-testid="mobile-menu-btn"] {
+      left: max(var(--mobile-padding), env(safe-area-inset-left)) !important;
+    }
+    
+    aside.fixed {
+      padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+    }
+  }
+}
+
+/* ============================================
+   25. LANDSCAPE MODE
+   ============================================ */
+
+@media (max-width: 896px) and (orientation: landscape) {
+  /* Cards grid - 2 columns */
+  [data-testid="influencer-grid"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  /* Stats - 4 columns */
+  .grid.grid-cols-2.lg\\:grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+  
+  /* Reduce vertical spacing */
+  .mb-6 {
+    margin-bottom: 16px !important;
+  }
+  
+  .py-6 {
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+  }
+}
+
+/* ============================================
+   26. DARK MODE SUPPORT
+   ============================================ */
+
+@media (max-width: 768px) {
+  .dark .bg-white.rounded-xl {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+  }
+  
+  .dark button[data-testid="mobile-menu-btn"] {
+    background: #1f2937 !important;
+  }
+}
+
+/* ============================================
+   27. ANIMATION PERFORMANCE
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* Reduce animations on mobile */
+  .transition-all {
+    transition: opacity 0.15s ease, background-color 0.15s ease !important;
+  }
+  
+  /* Disable hover transforms on touch */
+  @media (hover: none) {
+    .hover\\:scale-105:hover,
+    .hover\\:-translate-y-1:hover {
+      transform: none !important;
+    }
+  }
+}
+
+/* ============================================
+   28. SCROLLBAR HIDING
+   ============================================ */
+
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+  
+  * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+}
+
+/* ============================================
+   29. SPECIFIC PAGE FIXES
+   ============================================ */
+
+/* Influencers Page */
+@media (max-width: 768px) {
+  [data-testid="influencers-page"] .max-w-7xl {
+    padding-top: 16px !important;
+  }
+}
+
+/* Clusters Page - Cluster Attention header */
+@media (max-width: 768px) {
+  .flex.items-start.justify-between.gap-4 {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  
+  .flex.items-start.justify-between.gap-4 > div:first-child {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+  
+  .flex.items-start.justify-between.gap-4 .flex.gap-2 {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+}
+
+/* Reality Page Stats */
+@media (max-width: 768px) {
+  .grid.grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ============================================
+   30. UTILITY CLASSES
+   ============================================ */
+
+@media (max-width: 768px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+  
+  .mobile-scroll-x {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  .mobile-scroll-x::-webkit-scrollbar {
+    display: none !important;
+  }
+  
+  .mobile-scroll-x > * {
+    flex-shrink: 0 !important;
+  }
+}

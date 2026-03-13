@@ -1,0 +1,673 @@
+/* ===================================
+   TELEGRAM 2026 DESIGN SYSTEM
+   Modern glassmorphism with rounded edges
+   =================================== */
+
+/* Glass Card - Telegram Style */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 24px;
+  box-shadow: 
+    0 4px 30px rgba(0, 0, 0, 0.03),
+    0 1px 4px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-hover:hover {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 
+    0 8px 40px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Modern Input Fields - Pill Shape */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="password"],
+textarea {
+  background: rgba(242, 242, 247, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 20px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+input:focus,
+textarea:focus {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 122, 255, 0.3);
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.08);
+}
+
+/* Modern Buttons - Telegram Style */
+.btn-primary {
+  background: linear-gradient(135deg, #007AFF 0%, #0066DD 100%);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 16px rgba(0, 122, 255, 0.2),
+    0 1px 4px rgba(0, 122, 255, 0.1);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(0, 122, 255, 0.3),
+    0 2px 8px rgba(0, 122, 255, 0.15);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: rgba(242, 242, 247, 0.95);
+  color: #1c1c1e;
+  border: none;
+  border-radius: 20px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(229, 229, 234, 0.95);
+  transform: translateY(-1px);
+}
+
+/* Badge Styles - Modern */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.badge-blue {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(0, 122, 255, 0.1) 100%);
+  color: #007AFF;
+  border: 1px solid rgba(0, 122, 255, 0.2);
+}
+
+.badge-green {
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.15) 0%, rgba(52, 199, 89, 0.1) 100%);
+  color: #34C759;
+  border: 1px solid rgba(52, 199, 89, 0.2);
+}
+
+.badge-emerald {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.badge-purple {
+  background: linear-gradient(135deg, rgba(175, 82, 222, 0.15) 0%, rgba(175, 82, 222, 0.1) 100%);
+  color: #AF52DE;
+  border: 1px solid rgba(175, 82, 222, 0.2);
+}
+
+.badge-orange {
+  background: linear-gradient(135deg, rgba(255, 149, 0, 0.15) 0%, rgba(255, 149, 0, 0.1) 100%);
+  color: #FF9500;
+  border: 1px solid rgba(255, 149, 0, 0.2);
+}
+
+.badge-red {
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.15) 0%, rgba(255, 59, 48, 0.1) 100%);
+  color: #FF3B30;
+  border: 1px solid rgba(255, 59, 48, 0.2);
+}
+
+.badge-gray {
+  background: linear-gradient(135deg, rgba(142, 142, 147, 0.15) 0%, rgba(142, 142, 147, 0.1) 100%);
+  color: #8E8E93;
+  border: 1px solid rgba(142, 142, 147, 0.2);
+}
+
+/* Tab Buttons - Pill Style */
+.tab-btn {
+  padding: 8px 16px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  outline: none;
+}
+
+.tab-btn-active {
+  background: linear-gradient(135deg, #007AFF 0%, #0066DD 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
+}
+
+.tab-btn-inactive {
+  background: rgba(242, 242, 247, 0.6);
+  color: #8E8E93;
+}
+
+.tab-btn-inactive:hover {
+  background: rgba(242, 242, 247, 0.95);
+  color: #1c1c1e;
+}
+
+/* Search Bar - Telegram Style */
+.search-bar {
+  position: relative;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  padding: 14px 20px 14px 48px;
+  background: rgba(242, 242, 247, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 24px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.search-input:focus {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 122, 255, 0.3);
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.08);
+}
+
+.search-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8E8E93;
+}
+
+/* Modal/Dialog - Modern Style */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.modal-content {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border-radius: 28px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Custom focus styles */
+.arkham-focus:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Hover lift effect */
+.arkham-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.arkham-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Number formatting */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Skeleton loading */
+.arkham-skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Chain icons positioning */
+.chain-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+/* Activity stream */
+.activity-item {
+  position: relative;
+}
+
+.activity-item::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 40px;
+  bottom: -12px;
+  width: 1px;
+  background: #e5e7eb;
+}
+
+.activity-item:last-child::before {
+  display: none;
+}
+
+/* Tooltips */
+.arkham-tooltip {
+  position: relative;
+}
+
+.arkham-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: #1f2937;
+  color: white;
+  font-size: 12px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.arkham-tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Price change indicators */
+.price-up {
+  color: #10b981;
+}
+
+.price-down {
+  color: #ef4444;
+}
+
+.price-neutral {
+  color: #6b7280;
+}
+
+/* Entity type colors */
+.entity-type-exchange {
+  color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.entity-type-fund {
+  color: #8b5cf6;
+  background-color: #f5f3ff;
+}
+
+.entity-type-whale {
+  color: #10b981;
+  background-color: #ecfdf5;
+}
+
+.entity-type-dex {
+  color: #f59e0b;
+  background-color: #fffbeb;
+}
+
+.entity-type-unknown {
+  color: #6b7280;
+  background-color: #f9fafb;
+}
+
+/* Dashboard card hover effects */
+.dashboard-card-hover {
+  transition: all 0.2s ease;
+}
+
+.dashboard-card-hover:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* Compact table styles */
+.compact-table th,
+.compact-table td {
+  padding: 8px 12px;
+}
+
+.compact-table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Custom scrollbar for sidebar */
+.arkham-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.arkham-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.arkham-sidebar::-webkit-scrollbar-thumb {
+  background-color: #e5e7eb;
+  border-radius: 2px;
+}
+
+/* Badge variants */
+.badge-outline {
+  background: transparent;
+  border: 1px solid currentColor;
+}
+
+/* Notification dot */
+.notification-dot {
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  border: 2px solid white;
+}
+
+/* Search input styles */
+.search-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Dropdown menu styles */
+.dropdown-menu {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 4px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.dropdown-item:hover {
+  background: #f9fafb;
+}
+
+/* Flow arrow animation */
+@keyframes flow-arrow {
+  0% {
+    transform: translateX(-4px);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(4px);
+    opacity: 0;
+  }
+}
+
+.flow-arrow {
+  animation: flow-arrow 1.5s ease-in-out infinite;
+}
+
+
+/* ===================================
+   ADDITIONAL TELEGRAM 2026 UTILITIES
+   =================================== */
+
+/* Pulse animation for live elements */
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Smooth hover lift */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Icon Button - Telegram Style */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: rgba(242, 242, 247, 0.8);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.icon-btn:hover {
+  background: rgba(229, 229, 234, 0.95);
+  transform: scale(1.05);
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+/* Card with gradient border */
+.card-gradient-border {
+  position: relative;
+  background: white;
+  border-radius: 24px;
+  padding: 2px;
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.2), rgba(175, 82, 222, 0.2));
+}
+
+.card-gradient-border-inner {
+  background: white;
+  border-radius: 22px;
+  padding: 20px;
+}
+
+/* Loading Skeleton - Modern */
+.skeleton {
+  background: linear-gradient(
+    90deg, 
+    rgba(242, 242, 247, 0.6) 25%, 
+    rgba(229, 229, 234, 0.8) 50%, 
+    rgba(242, 242, 247, 0.6) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.8s ease-in-out infinite;
+  border-radius: 12px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Notification Dot */
+.notification-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #FF3B30;
+  box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.2);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Success/Error Messages - Toast Style */
+.toast {
+  background: rgba(28, 28, 30, 0.95);
+  backdrop-filter: blur(20px);
+  color: white;
+  padding: 14px 20px;
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.toast-success {
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.95) 0%, rgba(48, 176, 199, 0.95) 100%);
+}
+
+.toast-error {
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.95) 0%, rgba(255, 45, 85, 0.95) 100%);
+}
+
+/* Divider - Subtle */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.06), transparent);
+  margin: 16px 0;
+}
+
+/* Avatar with status indicator */
+.avatar-container {
+  position: relative;
+  display: inline-block;
+}
+
+.avatar-status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.avatar-status-online {
+  background: #34C759;
+}
+
+.avatar-status-offline {
+  background: #8E8E93;
+}
+
+/* Smooth transitions */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar - Telegram Style */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(142, 142, 147, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(142, 142, 147, 0.5);
+}
+
+/* Selection color */
+::selection {
+  background: rgba(0, 122, 255, 0.2);
+  color: #1c1c1e;
+}
+
+/* Updated at Mon Jan 12 18:33:16 UTC 2026 */
