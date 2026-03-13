@@ -64,23 +64,52 @@ export const useAppStore = create((set, get) => ({
   
   setActiveTab: (tab) => set({ activeTab: tab }),
   
-  // Fetch signals for map
+  // Fetch signals for map - NOW USING EVENTS (deduplicated)
   fetchSignals: async (days = 7) => {
     set({ signalsLoading: true });
     try {
-      const res = await fetch(`${API_BASE}/api/geo/map?days=${days}&limit=50`);
+      // Use events API for deduplicated/correlated signals
+      const res = await fetch(`${API_BASE}/api/geo/events?days=${days}&limit=100`);
       const data = await res.json();
       if (data.ok) {
-        // Transform eventType to type for compatibility
+        // Transform event format to signal format for map compatibility
         const signals = (data.items || []).map(item => ({
-          ...item,
-          type: mapEventType(item.eventType),
-          confidence: 0.8, // Default confidence
+          id: item.event_id,
+          type: item.type || 'incident',
+          lat: item.lat,
+          lng: item.lng,
+          confidence: item.confidence || 0.5,
+          reports: item.report_count || 1,
+          sources: item.source_count || 1,
+          status: item.status,
+          strength: item.strength || 'weak',
+          createdAt: item.created_at,
+          updatedAt: item.updated_at,
+          expiresAt: item.expires_at,
+          event_id: item.event_id, // Keep for event actions
+          photo_count: item.photo_count || 0,
+          user_confirmations: item.user_confirmations || 0,
+          negative_reports: item.negative_reports || 0,
         }));
         set({ signals });
       }
     } catch (err) {
-      console.error('Failed to fetch signals:', err);
+      console.error('Failed to fetch events:', err);
+      // Fallback to old map API
+      try {
+        const res = await fetch(`${API_BASE}/api/geo/map?days=${days}&limit=50`);
+        const data = await res.json();
+        if (data.ok) {
+          const signals = (data.items || []).map(item => ({
+            ...item,
+            type: mapEventType(item.eventType),
+            confidence: 0.8,
+          }));
+          set({ signals });
+        }
+      } catch (fallbackErr) {
+        console.error('Fallback fetch also failed:', fallbackErr);
+      }
     } finally {
       set({ signalsLoading: false });
     }

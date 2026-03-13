@@ -1776,4 +1776,85 @@ def build_geo_router(db, config) -> APIRouter:
         
         return {"ok": True, **result}
     
+    # ==================== AI Engine API ====================
+    
+    @router.get("/ai-engine/config")
+    async def get_ai_config():
+        """
+        Get AI Engine configuration.
+        
+        For admin panel: AI Engine settings tab.
+        """
+        from .services.ai_signal_classifier import AISignalClassifier
+        classifier = AISignalClassifier(db)
+        config = await classifier.get_config()
+        return {"ok": True, "config": config}
+    
+    @router.post("/ai-engine/classify")
+    async def test_ai_classification(
+        text: str = Query(..., min_length=3, description="Text to classify"),
+        source_channel: str = Query(None),
+    ):
+        """
+        Test AI classification on text.
+        
+        Returns signal type, confidence, locations, entities.
+        """
+        from .services.ai_signal_classifier import AISignalClassifier
+        classifier = AISignalClassifier(db)
+        result = await classifier.classify_message(text, source_channel)
+        return {"ok": True, "result": result}
+    
+    @router.get("/ai-engine/signal-types")
+    async def get_ai_signal_types():
+        """Get all signal types with configuration."""
+        from .services.ai_signal_classifier import SIGNAL_TYPES
+        return {
+            "ok": True,
+            "types": {
+                name: {
+                    "emoji": config["emoji"],
+                    "priority": config["priority"],
+                    "ttl_minutes": config["ttl_minutes"],
+                }
+                for name, config in SIGNAL_TYPES.items()
+            }
+        }
+    
+    @router.get("/ai-engine/locations")
+    async def get_ai_locations():
+        """Get Kyiv locations dictionary."""
+        from .services.ai_signal_classifier import KYIV_LOCATIONS
+        return {
+            "ok": True,
+            "locations": {
+                name: {
+                    "aliases": data["aliases"],
+                    "lat": data["lat"],
+                    "lng": data["lng"],
+                }
+                for name, data in KYIV_LOCATIONS.items()
+            }
+        }
+    
+    @router.get("/ai-engine/slang")
+    async def get_ai_slang():
+        """Get slang normalization dictionary."""
+        from .services.ai_signal_classifier import SLANG_DICTIONARY
+        return {
+            "ok": True,
+            "slang": SLANG_DICTIONARY,
+            "count": len(SLANG_DICTIONARY),
+        }
+    
+    @router.get("/ai-engine/negative-keywords")
+    async def get_ai_negative_keywords():
+        """Get negative keywords list."""
+        from .services.ai_signal_classifier import NEGATIVE_KEYWORDS
+        return {
+            "ok": True,
+            "keywords": NEGATIVE_KEYWORDS,
+            "count": len(NEGATIVE_KEYWORDS),
+        }
+    
     return router

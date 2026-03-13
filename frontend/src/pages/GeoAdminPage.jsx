@@ -1525,76 +1525,67 @@ function BotView({ token }) {
 
 // ==================== AI Engine ====================
 function AIEngineView({ token }) {
-  const [settings, setSettings] = useState({
-    enabled: false,
-    openai_key: '',
-    openai_key_set: false,
-    model: 'gpt-4o-mini',
-    confidence_threshold: 0.6
-  });
+  const [config, setConfig] = useState(null);
+  const [signalTypes, setSignalTypes] = useState({});
+  const [locations, setLocations] = useState({});
+  const [slang, setSlang] = useState({});
+  const [negativeKeywords, setNegativeKeywords] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [testText, setTestText] = useState('');
   const [testResult, setTestResult] = useState(null);
   const [testing, setTesting] = useState(false);
-  const [slangDict, setSlangDict] = useState({ default: {}, custom: {} });
-  const [newSlang, setNewSlang] = useState({ word: '', meaning: '' });
+  const [eventStats, setEventStats] = useState(null);
+  const [eventConfig, setEventConfig] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview');
   
-  // Fetch settings
+  // Fetch all data
   useEffect(() => {
-    const fetchSettings = async () => {
+    const fetchData = async () => {
       try {
-        const [settingsRes, slangRes] = await Promise.all([
-          fetch(`${API_BASE}/api/signal-intel/settings`),
-          fetch(`${API_BASE}/api/signal-intel/slang`)
+        const [configRes, typesRes, locRes, slangRes, negRes, eventStatsRes, eventConfigRes] = await Promise.all([
+          fetch(`${API_BASE}/api/geo/ai-engine/config`),
+          fetch(`${API_BASE}/api/geo/ai-engine/signal-types`),
+          fetch(`${API_BASE}/api/geo/ai-engine/locations`),
+          fetch(`${API_BASE}/api/geo/ai-engine/slang`),
+          fetch(`${API_BASE}/api/geo/ai-engine/negative-keywords`),
+          fetch(`${API_BASE}/api/geo/events/stats`),
+          fetch(`${API_BASE}/api/geo/events/config/info`),
         ]);
         
-        const settingsData = await settingsRes.json();
-        const slangData = await slangRes.json();
+        const [configData, typesData, locData, slangData, negData, eventStatsData, eventConfigData] = await Promise.all([
+          configRes.json(),
+          typesRes.json(),
+          locRes.json(),
+          slangRes.json(),
+          negRes.json(),
+          eventStatsRes.json(),
+          eventConfigRes.json(),
+        ]);
         
-        if (settingsData.ok) setSettings(settingsData.settings);
-        if (slangData.ok) setSlangDict(slangData);
+        if (configData.ok) setConfig(configData.config);
+        if (typesData.ok) setSignalTypes(typesData.types);
+        if (locData.ok) setLocations(locData.locations);
+        if (slangData.ok) setSlang(slangData.slang);
+        if (negData.ok) setNegativeKeywords(negData.keywords);
+        if (eventStatsData.ok) setEventStats(eventStatsData.stats);
+        if (eventConfigData.ok) setEventConfig(eventConfigData.config);
       } catch (err) {
-        console.error('Settings fetch error:', err);
+        console.error('AI Engine fetch error:', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchSettings();
+    fetchData();
   }, []);
   
-  // Save settings
-  const saveSettings = async () => {
-    setSaving(true);
-    try {
-      const res = await fetch(`${API_BASE}/api/signal-intel/settings`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings)
-      });
-      const data = await res.json();
-      if (data.ok) {
-        alert('Налаштування збережено!');
-      }
-    } catch (err) {
-      console.error('Save error:', err);
-    } finally {
-      setSaving(false);
-    }
-  };
-  
-  // Test signal processing
-  const testProcess = async () => {
+  // Test AI classification
+  const testClassify = async () => {
     if (!testText.trim()) return;
     setTesting(true);
     setTestResult(null);
     
     try {
-      const res = await fetch(`${API_BASE}/api/signal-intel/process`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: testText })
-      });
+      const res = await fetch(`${API_BASE}/api/geo/ai-engine/classify?text=${encodeURIComponent(testText)}`);
       const data = await res.json();
       setTestResult(data);
     } catch (err) {
@@ -1602,44 +1593,6 @@ function AIEngineView({ token }) {
       setTestResult({ ok: false, error: err.message });
     } finally {
       setTesting(false);
-    }
-  };
-  
-  // Add slang
-  const addSlang = async () => {
-    if (!newSlang.word || !newSlang.meaning) return;
-    
-    try {
-      const res = await fetch(`${API_BASE}/api/signal-intel/slang`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSlang)
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setSlangDict(prev => ({
-          ...prev,
-          custom: { ...prev.custom, [newSlang.word]: newSlang.meaning }
-        }));
-        setNewSlang({ word: '', meaning: '' });
-      }
-    } catch (err) {
-      console.error('Add slang error:', err);
-    }
-  };
-  
-  // Process channel posts
-  const processChannel = async (username) => {
-    try {
-      const res = await fetch(`${API_BASE}/api/signal-intel/batch/channel/${username}?limit=50`, {
-        method: 'POST'
-      });
-      const data = await res.json();
-      if (data.ok) {
-        alert(`Оброблено ${data.postsProcessed} постів, знайдено ${data.signalsExtracted} сигналів, збережено ${data.signalsSaved}`);
-      }
-    } catch (err) {
-      console.error('Process channel error:', err);
     }
   };
   
@@ -1655,202 +1608,349 @@ function AIEngineView({ token }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">AI Signal Engine</h2>
-        <div className={`px-3 py-1 rounded-full text-sm font-medium ${settings.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>
-          {settings.enabled ? 'AI Увімкнено' : 'AI Вимкнено'}
+        <div className={`px-3 py-1 rounded-full text-sm font-medium ${config?.llm_available ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'}`}>
+          {config?.llm_available ? `AI: ${config?.model}` : 'Rules Only'}
         </div>
       </div>
       
-      {/* Settings Card */}
-      <div className="glass-card p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Налаштування OpenAI</h3>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-gray-700">Увімкнути AI класифікацію</label>
-            <button
-              onClick={() => setSettings(s => ({ ...s, enabled: !s.enabled }))}
-              className={`w-12 h-6 rounded-full transition-colors ${settings.enabled ? 'bg-emerald-500' : 'bg-gray-300'}`}
-            >
-              <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${settings.enabled ? 'translate-x-6' : 'translate-x-0.5'}`} />
-            </button>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">OpenAI API Key</label>
-            <input
-              type="password"
-              value={settings.openai_key || ''}
-              onChange={(e) => setSettings(s => ({ ...s, openai_key: e.target.value }))}
-              placeholder={settings.openai_key_set ? '••••••••' : 'sk-...'}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-400"
-            />
-            {settings.openai_key_set && <p className="text-xs text-gray-500 mt-1">Ключ вже встановлено</p>}
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Модель</label>
-            <select
-              value={settings.model}
-              onChange={(e) => setSettings(s => ({ ...s, model: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-400"
-            >
-              <option value="gpt-4o-mini">GPT-4o Mini (швидка, дешева)</option>
-              <option value="gpt-4o">GPT-4o (точна)</option>
-              <option value="gpt-3.5-turbo">GPT-3.5 Turbo (бюджетна)</option>
-            </select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Поріг впевненості: {settings.confidence_threshold}
-            </label>
-            <input
-              type="range"
-              min="0.3"
-              max="0.9"
-              step="0.05"
-              value={settings.confidence_threshold}
-              onChange={(e) => setSettings(s => ({ ...s, confidence_threshold: parseFloat(e.target.value) }))}
-              className="w-full"
-            />
-            <p className="text-xs text-gray-500">Сигнали з впевненістю нижче цього порогу будуть відхилені</p>
-          </div>
-          
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-gray-200 pb-2">
+        {[
+          { id: 'overview', label: 'Огляд' },
+          { id: 'test', label: 'Тест' },
+          { id: 'config', label: 'Конфіг' },
+          { id: 'dictionaries', label: 'Словники' },
+        ].map(tab => (
           <button
-            onClick={saveSettings}
-            disabled={saving}
-            className="w-full py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-colors disabled:opacity-50"
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+              activeTab === tab.id
+                ? 'bg-emerald-500 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
           >
-            {saving ? 'Збереження...' : 'Зберегти налаштування'}
+            {tab.label}
           </button>
-        </div>
+        ))}
       </div>
       
-      {/* Test Panel */}
-      <div className="glass-card p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Тест парсингу</h3>
-        
-        <textarea
-          value={testText}
-          onChange={(e) => setTestText(e.target.value)}
-          placeholder="Вставте текст з Telegram для тестування...&#10;&#10;Приклад:&#10;На кульженка сірий бус зупинили хлопця&#10;Вул.виговського бп&#10;Оболонь чисто"
-          rows={5}
-          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-400 mb-4"
-        />
-        
-        <button
-          onClick={testProcess}
-          disabled={testing || !testText.trim()}
-          className="w-full py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50 mb-4"
-        >
-          {testing ? 'Обробка...' : 'Тестувати парсинг'}
-        </button>
-        
-        {testResult && (
-          <div className="bg-gray-50 rounded-xl p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-medium">Результат:</span>
-              <span className="text-sm text-gray-500">{testResult.count || 0} сигналів знайдено</span>
+      {/* Overview Tab */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6">
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="glass-card p-5">
+              <div className="text-3xl font-bold text-emerald-600">{eventStats?.by_status?.verified || 0}</div>
+              <div className="text-sm text-gray-500">Verified Events</div>
             </div>
-            
-            {testResult.signals?.map((sig, idx) => (
-              <div key={idx} className="bg-white rounded-lg p-3 mb-2 border border-gray-100">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`px-2 py-0.5 rounded text-xs font-bold text-white ${
-                    sig.type === 'police' ? 'bg-blue-500' :
-                    sig.type === 'detention' ? 'bg-red-500' :
-                    sig.type === 'checkpoint' ? 'bg-orange-500' :
-                    sig.type === 'raid' ? 'bg-purple-500' :
-                    sig.type === 'tck' ? 'bg-green-500' :
+            <div className="glass-card p-5">
+              <div className="text-3xl font-bold text-blue-600">{eventStats?.total_reports || 0}</div>
+              <div className="text-sm text-gray-500">Total Reports</div>
+            </div>
+            <div className="glass-card p-5">
+              <div className="text-3xl font-bold text-purple-600">{eventStats?.avg_verified_confidence || 0}%</div>
+              <div className="text-sm text-gray-500">Avg Confidence</div>
+            </div>
+            <div className="glass-card p-5">
+              <div className="text-3xl font-bold text-orange-600">{Object.keys(signalTypes).length}</div>
+              <div className="text-sm text-gray-500">Signal Types</div>
+            </div>
+          </div>
+          
+          {/* Event Builder Config */}
+          {eventConfig && (
+            <div className="glass-card p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Event Builder Configuration</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="p-3 bg-gray-50 rounded-xl">
+                  <div className="text-sm text-gray-500">Dedup Distance</div>
+                  <div className="text-xl font-bold text-gray-900">{eventConfig.dedup_distance_m}m</div>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-xl">
+                  <div className="text-sm text-gray-500">Time Window</div>
+                  <div className="text-xl font-bold text-gray-900">{eventConfig.dedup_time_window_min} min</div>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-xl">
+                  <div className="text-sm text-gray-500">Confidence Threshold</div>
+                  <div className="text-xl font-bold text-gray-900">{eventConfig.confidence_threshold}</div>
+                </div>
+              </div>
+              
+              <div className="mt-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2">Event Status Flow</h4>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(eventConfig.statuses || {}).map(([status, desc]) => (
+                    <div key={status} className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm">
+                      <span className="font-semibold">{status}</span>: {desc}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Events by Status */}
+          {eventStats && (
+            <div className="glass-card p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Events by Status</h3>
+              <div className="flex flex-wrap gap-4">
+                {Object.entries(eventStats.by_status || {}).map(([status, count]) => (
+                  <div key={status} className={`px-4 py-2 rounded-xl text-white font-medium ${
+                    status === 'verified' ? 'bg-emerald-500' :
+                    status === 'correlated' ? 'bg-blue-500' :
+                    status === 'candidate' ? 'bg-yellow-500' :
                     'bg-gray-500'
                   }`}>
-                    {sig.type?.toUpperCase()}
-                  </span>
-                  <span className="text-sm text-gray-600">confidence: {(sig.confidence * 100).toFixed(0)}%</span>
-                  {sig.aiUsed && <span className="text-xs bg-purple-100 text-purple-600 px-1.5 rounded">AI</span>}
-                </div>
-                {sig.locationName && (
-                  <div className="text-sm text-gray-700">📍 {sig.locationName}</div>
-                )}
-                {sig.lat && sig.lng && (
-                  <div className="text-xs text-gray-400">{sig.lat.toFixed(4)}, {sig.lng.toFixed(4)}</div>
-                )}
-                <div className="text-xs text-gray-500 mt-1 truncate">{sig.originalText}</div>
+                    {status}: {count}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-      
-      {/* Slang Dictionary */}
-      <div className="glass-card p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Словник сленгу ({Object.keys(slangDict.default || {}).length + Object.keys(slangDict.custom || {}).length} слів)
-        </h3>
-        
-        <div className="flex gap-2 mb-4">
-          <input
-            type="text"
-            value={newSlang.word}
-            onChange={(e) => setNewSlang(s => ({ ...s, word: e.target.value }))}
-            placeholder="Слово"
-            className="flex-1 px-3 py-2 border border-gray-200 rounded-xl"
-          />
-          <input
-            type="text"
-            value={newSlang.meaning}
-            onChange={(e) => setNewSlang(s => ({ ...s, meaning: e.target.value }))}
-            placeholder="Значення"
-            className="flex-1 px-3 py-2 border border-gray-200 rounded-xl"
-          />
-          <button
-            onClick={addSlang}
-            className="px-4 py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600"
-          >
-            Додати
-          </button>
-        </div>
-        
-        <div className="max-h-48 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            {Object.entries(slangDict.custom || {}).map(([word, meaning]) => (
-              <div key={word} className="flex items-center justify-between bg-emerald-50 rounded px-2 py-1">
-                <span><strong>{word}</strong> → {meaning}</span>
-                <button className="text-red-500 hover:text-red-700 text-xs">×</button>
-              </div>
-            ))}
-            {Object.entries(slangDict.default || {}).slice(0, 20).map(([word, meaning]) => (
-              <div key={word} className="flex items-center justify-between bg-gray-50 rounded px-2 py-1 text-gray-600">
-                <span><strong>{word}</strong> → {meaning}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      
-      {/* Signal Types */}
-      <div className="glass-card p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Типи сигналів</h3>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { type: 'police', label: 'Поліція', icon: '🚓', color: 'blue' },
-            { type: 'detention', label: 'Затримання', icon: '🧟', color: 'red' },
-            { type: 'checkpoint', label: 'Блокпост', icon: '🚧', color: 'orange' },
-            { type: 'raid', label: 'Облава', icon: '🧟‍♂️', color: 'purple' },
-            { type: 'tck', label: 'ТЦК', icon: '🟢', color: 'green' },
-            { type: 'weather', label: 'Погода', icon: '🌧', color: 'gray' },
-            { type: 'safe', label: 'Безпечно', icon: '✅', color: 'emerald' },
-            { type: 'trash', label: 'Сміття', icon: '🗑', color: 'gray' },
-          ].map(({ type, label, icon, color }) => (
-            <div key={type} className={`p-3 rounded-xl border-2 border-${color}-200 bg-${color}-50`}>
-              <div className="text-2xl mb-1">{icon}</div>
-              <div className="font-medium text-gray-900">{label}</div>
-              <div className="text-xs text-gray-500">{type}</div>
             </div>
-          ))}
+          )}
         </div>
-      </div>
+      )}
+      
+      {/* Test Tab */}
+      {activeTab === 'test' && (
+        <div className="glass-card p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Test AI Classification</h3>
+          
+          <textarea
+            value={testText}
+            onChange={(e) => setTestText(e.target.value)}
+            placeholder="Вставте текст з Telegram для тестування...&#10;&#10;Приклади:&#10;• БП на Житомирській, перевіряють&#10;• На Хрещатику ТЦК хапають&#10;• Оболонь чисто&#10;• ДТП на Харківському шосе"
+            rows={5}
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-400 mb-4 font-mono text-sm"
+          />
+          
+          <button
+            onClick={testClassify}
+            disabled={testing || !testText.trim()}
+            className="w-full py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50 font-semibold mb-4"
+          >
+            {testing ? 'Класифікація...' : '🧠 Тестувати AI класифікацію'}
+          </button>
+          
+          {testResult && (
+            <div className="bg-gray-50 rounded-xl p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-gray-900">Результат</span>
+                <span className={`px-2 py-1 rounded-lg text-xs font-medium ${
+                  testResult.result?.method === 'ai' ? 'bg-purple-100 text-purple-700' : 'bg-gray-200 text-gray-600'
+                }`}>
+                  {testResult.result?.method === 'ai' ? '🧠 AI' : '📋 Rules'}
+                </span>
+              </div>
+              
+              {testResult.result?.isNegative ? (
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                  <div className="text-orange-700 font-semibold mb-2">⚠️ Негативне повідомлення</div>
+                  <div className="text-sm text-orange-600">
+                    Matched: {testResult.result.matched_negatives?.join(', ')}
+                  </div>
+                </div>
+              ) : testResult.result?.signalType ? (
+                <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{signalTypes[testResult.result.signalType]?.emoji || '📍'}</span>
+                    <div>
+                      <div className="font-bold text-lg text-gray-900 uppercase">{testResult.result.signalType}</div>
+                      <div className="text-sm text-gray-500">
+                        Confidence: <span className="font-semibold text-emerald-600">{Math.round(testResult.result.confidence * 100)}%</span>
+                        {' • '}
+                        Severity: <span className={`font-semibold ${
+                          testResult.result.severity === 'critical' ? 'text-red-600' :
+                          testResult.result.severity === 'high' ? 'text-orange-600' :
+                          'text-gray-600'
+                        }`}>{testResult.result.severity}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {testResult.result.locations?.length > 0 && (
+                    <div>
+                      <div className="text-sm font-semibold text-gray-700 mb-1">📍 Locations:</div>
+                      <div className="flex flex-wrap gap-2">
+                        {testResult.result.locations.map((loc, i) => (
+                          <span key={i} className="px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm">
+                            {loc.name}
+                            {loc.coords && <span className="text-xs text-blue-500 ml-1">({loc.coords.lat?.toFixed(2)}, {loc.coords.lng?.toFixed(2)})</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {testResult.result.entities && Object.keys(testResult.result.entities).some(k => testResult.result.entities[k]) && (
+                    <div>
+                      <div className="text-sm font-semibold text-gray-700 mb-1">🔍 Entities:</div>
+                      <div className="flex flex-wrap gap-2">
+                        {Object.entries(testResult.result.entities).map(([key, val]) => val && (
+                          <span key={key} className="px-2 py-1 bg-purple-50 text-purple-700 rounded-lg text-sm">
+                            {key}: {val}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-gray-100 rounded-xl p-4 text-gray-600">
+                  Не вдалося класифікувати повідомлення
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Config Tab */}
+      {activeTab === 'config' && config && (
+        <div className="space-y-6">
+          <div className="glass-card p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">AI Configuration</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                <span className="text-gray-700">LLM Available</span>
+                <span className={`font-semibold ${config.llm_available ? 'text-emerald-600' : 'text-red-500'}`}>
+                  {config.llm_available ? '✓ Yes' : '✗ No'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                <span className="text-gray-700">Model</span>
+                <span className="font-semibold text-gray-900">{config.model}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                <span className="text-gray-700">Confidence Threshold</span>
+                <span className="font-semibold text-gray-900">{config.confidence_threshold}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                <span className="text-gray-700">Signal Types</span>
+                <span className="font-semibold text-gray-900">{config.signal_types?.length || 0}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                <span className="text-gray-700">Slang Entries</span>
+                <span className="font-semibold text-gray-900">{config.slang_entries}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                <span className="text-gray-700">Negative Keywords</span>
+                <span className="font-semibold text-gray-900">{config.negative_keywords_count}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                <span className="text-gray-700">Known Locations</span>
+                <span className="font-semibold text-gray-900">{config.locations_count}</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Signal Types Table */}
+          <div className="glass-card p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Signal Types & Priorities</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500">Type</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500">Emoji</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500">Priority</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500">TTL (min)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {Object.entries(signalTypes).map(([type, cfg]) => (
+                    <tr key={type} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 font-medium text-gray-900">{type}</td>
+                      <td className="px-4 py-2 text-2xl">{cfg.emoji}</td>
+                      <td className="px-4 py-2">
+                        <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                          cfg.priority >= 0.85 ? 'bg-red-100 text-red-700' :
+                          cfg.priority >= 0.7 ? 'bg-orange-100 text-orange-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {cfg.priority}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-gray-600">{cfg.ttl_minutes}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Dictionaries Tab */}
+      {activeTab === 'dictionaries' && (
+        <div className="space-y-6">
+          {/* Slang Dictionary */}
+          <div className="glass-card p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Slang Dictionary ({Object.keys(slang).length} entries)
+            </h3>
+            <div className="max-h-64 overflow-y-auto">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {Object.entries(slang).map(([word, meaning]) => (
+                  <div key={word} className="p-2 bg-gray-50 rounded-lg text-sm">
+                    <span className="font-mono text-blue-600">{word}</span>
+                    <span className="text-gray-400 mx-1">→</span>
+                    <span className="text-gray-700">{meaning}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {/* Negative Keywords */}
+          <div className="glass-card p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Negative Keywords ({negativeKeywords.length})
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {negativeKeywords.map((kw, i) => (
+                <span key={i} className="px-2 py-1 bg-orange-50 text-orange-700 rounded-lg text-sm font-mono">
+                  {kw}
+                </span>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-3">
+              Messages containing these words will reduce event confidence or expire events
+            </p>
+          </div>
+          
+          {/* Kyiv Locations */}
+          <div className="glass-card p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Kyiv Locations ({Object.keys(locations).length})
+            </h3>
+            <div className="max-h-64 overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 sticky top-0">
+                  <tr>
+                    <th className="text-left px-3 py-2">Location</th>
+                    <th className="text-left px-3 py-2">Aliases</th>
+                    <th className="text-left px-3 py-2">Coords</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {Object.entries(locations).map(([name, data]) => (
+                    <tr key={name} className="hover:bg-gray-50">
+                      <td className="px-3 py-2 font-medium">{name}</td>
+                      <td className="px-3 py-2 text-gray-500">
+                        {data.aliases?.join(', ') || '—'}
+                      </td>
+                      <td className="px-3 py-2 font-mono text-xs text-gray-400">
+                        {data.lat?.toFixed(4)}, {data.lng?.toFixed(4)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
